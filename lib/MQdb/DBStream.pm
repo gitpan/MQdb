@@ -51,6 +51,8 @@ The rest of the documentation details each of the object methods. Internal metho
 
 my $__mqdb_dbstream_should_use_result = undef;
 
+$VERSION=0.952;
+
 package MQdb::DBStream;
 
 use strict;

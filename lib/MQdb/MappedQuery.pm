@@ -86,6 +86,7 @@ The rest of the documentation details each of the object methods. Internal metho
 
 =cut
 
+$VERSION=0.952;
 
 package MQdb::MappedQuery;
 

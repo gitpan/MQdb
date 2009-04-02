@@ -59,7 +59,7 @@ and a variation on other Object-relational-mapped template systems.
 
 VERSION
 -------
-0.951 Thursday April 2, 2009
+0.952 Thursday April 2, 2009
 
 DOCUMENTATION
 -------------
@@ -82,8 +82,8 @@ INSTALLATION INSTRUCTIONS
 	Hard-headed users can directly get the distribution from 
 	First download the source.
 	Then, in a shell:
-	/home/somewhere% tar -xzvf MQdb-0.951.tar.gz
-	cd MQdb-0.951
+	/home/somewhere% tar -xzvf MQdb-0.952.tar.gz
+	cd MQdb-0.952
 	make
 	make install
 

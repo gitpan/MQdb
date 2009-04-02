@@ -55,6 +55,7 @@ Internal methods are usually preceded with a _
 
 =cut
 
+$VERSION=0.952;
 
 package MQdb::DBObject;
 
