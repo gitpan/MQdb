@@ -22,31 +22,31 @@ Contact Jessica Severin: jessica.severin@gmail.com
 
 =head1 LICENSE
 
-* Software License Agreement (BSD License)
-* MappedQueryDB [MQdb] toolkit
-* copyright (c) 2006-2009 Jessica Severin
-* All rights reserved.
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of Jessica Severin nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Software License Agreement (BSD License)
+ * MappedQueryDB [MQdb] toolkit
+ * copyright (c) 2006-2009 Jessica Severin
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Jessica Severin nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =head1 APPENDIX
 
@@ -55,7 +55,7 @@ Internal methods are usually preceded with a _
 
 =cut
 
-$VERSION=0.952;
+$VERSION=0.953;
 
 package MQdb::DBObject;
 
@@ -213,32 +213,21 @@ sub db_id {
   my $self = shift;
   return $self->{'_db_id'} if(defined($self->{'_db_id'}));
   return undef unless($self->database);
-  $self->{'_db_id'} = 
-    sprintf("%s://%s:%s/%s/%s?id=%d",
+  if($self->database->uuid) {
+    $self->{'_db_id'} = $self->database->uuid . "::" . $self->primary_id . ":::" . $self->class;
+  } else {
+    $self->{'_db_id'} = 
+      sprintf("%s://%s:%s/%s/%s?id=%d",
                $self->database->driver, 
                $self->database->host, 
                $self->database->port, 
                $self->database->dbname,
                $self->class,
                $self->primary_id);
+  }
   return $self->{'_db_id'};
 }
 
-
-=head2 url
-
-  Description: the worldwide unique identifier for this object.
-               A URL-like combination of database, class, and id
-               same as db_id, just alternate api call.
-  Returntype : string or undef if database is not defined
-  Exceptions : none
-
-=cut
-
-sub url {
-  my $self =shift;
-  return $self->db_id;
-}
 
 =head2 display_desc
 

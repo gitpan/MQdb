@@ -4,11 +4,14 @@ MQdb::MappedQuery - DESCRIPTION of Object
 
 =head1 SYNOPSIS
 
-Yet another ORM based design pattern.  This is an evolution of several
-ideas I have either used or created over the last 15 years of coding.  
-A variation on the ActiveRecord design pattern that trades more 
-flexibility, power and control for slightly less automation.  
-Still provides a development speed/ease advange over most ORM patterns.
+An Object_relational_mapping (ORM) design pattern based on mapping 
+named_column results from any query into attributes of an object.
+As long as the column_names are parsable into attributes, any query is ok.
+This is an evolution of several ideas I have either used or created over 
+the last 15 years of coding.  This is a variation on the ActiveRecord design 
+pattern but it trades more  flexibility, power and control for slightly 
+less automation.  It still provides a development speed/ease advange 
+over many ORM patterns.
 
 =head1 DESCRIPTION
 
@@ -54,31 +57,31 @@ Jessica Severin <jessica.severin@gmail.com>
 
 =head1 LICENSE
 
-* Software License Agreement (BSD License)
-* MappedQueryDB [MQdb] toolkit
-* copyright (c) 2006-2009 Jessica Severin
-* All rights reserved.
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of Jessica Severin nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Software License Agreement (BSD License)
+ * MappedQueryDB [MQdb] toolkit
+ * copyright (c) 2006-2009 Jessica Severin
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Jessica Severin nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =head1 APPENDIX
 
@@ -86,7 +89,7 @@ The rest of the documentation details each of the object methods. Internal metho
 
 =cut
 
-$VERSION=0.952;
+$VERSION=0.953;
 
 package MQdb::MappedQuery;
 
@@ -97,32 +100,87 @@ use MQdb::DBStream;
 use MQdb::DBObject;
 our @ISA = qw(MQdb::DBObject);
 
+
+#################################################
+# Subclass must override these methods
+#################################################
+
+=head2 mapRow
+
+  Description: This method must be overridden by subclasses to do the mapping of columns 
+               from the query response into attributes of the object.  This is part of the
+               internal factory machinery. The instance of the class is created before this method is
+               called and the default init() method has already been called.  The purpose of this
+               method is to initialize the rest of the state of the instance based on the $row_hash
+  Arg (1)    : $row_hash perl hash 
+  Arg (2)    : optional $dbc DBI connection (not generally used by most sublcasses)
+  Returntype : $self
+  Exceptions : none
+  Caller     : only called by internal factory methods
+  Example    :
+                  sub mapRow {
+                      my $self = shift;
+                      my $rowHash = shift;
+                      
+                      $self->primary_id($rowHash->{'symbol_id'});
+                      $self->type($rowHash->{'sym_type'});
+                      $self->symbol($rowHash->{'sym_value'});
+                      return $self;
+                  }
+
+=cut
+
+sub mapRow {
+  my $self = shift;
+  my $row_hash = shift;
+  my $dbc = shift; #optional 
+  
+  die("mapRow must be implemented by subclasses");
+  #should by implemented by subclass to map columns into instance variables
+
+  return $self;
+}
+
+=head2 store
+
+  Description: This method is just an empty template as part of the API definition.
+               How it is defined, and how parameters are handled are completely up to each
+               subclass.  Each subclass should override and implement.
+  Returntype : $self
+  Exceptions : none
+  Caller     : general loader scripts
+
+=cut
+
+sub store {
+  my $self = shift;
+  die("store must be implemented by subclass");
+}
+
 #################################################
 # Factory methods
 #################################################
 
-#################################################
-# Instance methods
-#################################################
-
-#################################################
-# Framework database methods 
-# fetch methods are class level
-# insert/update/delete are instance level
-#################################################
-
 =head2 fetch_single
 
-  Arg (1)    : $database (MQdb::Database)
-  Arg (2)    : $sql (string of SQL statement with place holders)
-  Arg (3...) : optional parameters to map to the placehodlers within the SQL
-  Example    : $obj = $self->fetch_single($db, "select * from my_table where id=?", $id);
   Description: General purpose template method for fetching a single instance
                of this class(subclass) using the mapRow method to convert
                a row of data into an object.
+  Arg (1)    : $database (MQdb::Database)
+  Arg (2)    : $sql (string of SQL statement with place holders)
+  Arg (3...) : optional parameters to map to the placehodlers within the SQL
   Returntype : instance of this Class (subclass)
   Exceptions : none
   Caller     : subclasses (not public methods)
+  Example    : 
+                  sub fetch_by_id {
+                      my $class = shift;
+                      my $db = shift;
+                      my $id = shift;
+                      my $sql = "SELECT * FROM symbol WHERE symbol_id=?";
+                      return $class->fetch_single($db, $sql, $id);
+                  }
+
 
 =cut
 
@@ -152,16 +210,23 @@ sub fetch_single {
 
 =head2 fetch_multiple
 
-  Arg (1)    : $database (MQdb::Database)
-  Arg (2)    : $sql (string of SQL statement with place holders)
-  Arg (3...) : optional parameters to map to the placehodlers within the SQL
-  Example    : $obj = $self->fetch_single($db, "select * from my_table where id=?", $id);
   Description: General purpose template method for fetching an array of instance
                of this class(subclass) using the mapRow method to convert
                a row of data into an object.
-  Returntype : array of instance of this Class (subclass)
+  Arg (1)    : $database (MQdb::Database)
+  Arg (2)    : $sql (string of SQL statement with place holders)
+  Arg (3...) : optional parameters to map to the placehodlers within the SQL
+  Returntype : array of all instances of this Class (subclass) which match the query
   Exceptions : none
   Caller     : subclasses (not public methods)
+  Example    : 
+                  sub fetch_all_by_value {
+                      my $class = shift;
+                      my $db = shift;
+                      my $name = shift;
+                      my $sql = "SELECT * FROM symbol WHERE sym_value=?";
+                      return $class->fetch_multiple($db, $sql, $name);
+                  }
 
 =cut
 
@@ -200,65 +265,29 @@ sub fetch_multiple {
 }
 
 
-=head2 old_stream_multiple
-
-  Arg (1)    : $database (MQdb::Database)
-  Arg (2)    : $sql (string of SQL statement with place holders)
-  Arg (3...) : optional parameters to map to the placehodlers within the SQL
-  Example    : $obj = $self->fetch_single($db, "select * from my_table where id=?", $id);
-  Description: General purpose template method for fetching an array of instance
-               of this class(subclass) using the mapRow method to convert
-               a row of data into an object.
-  Returntype : array of instance of this Class (subclass)
-  Exceptions : none
-  Caller     : subclasses (not public methods)
-
-=cut
-
-sub old_stream_multiple {
-  my $class = shift;
-  my $db = shift;
-  my $sql = shift;
-  my @params = @_;
-
-  die("no database defined\n") unless($db);
-  my $obj_list = [];
-  
-  my $dbc = $db->get_connection;  
-  my $sth = $dbc->prepare($sql, { "mysql_use_result" => 1 });
-  $sth->execute(@params);
-  return $sth;
-}
-
-sub next_in_stream {
-  my $class = shift;
-  my $sth = shift;
-
-  if(my $row_hash = $sth->fetchrow_hashref) {
-
-    my $obj = $class->new();
-    $obj->mapRow($row_hash);  #required by subclass
-
-    return $obj;
-  }
-  $sth->finish;
-  return undef;
-}
-
-
 =head2 stream_multiple
 
+  Description: General purpose template method for fetching multiple instance
+               of this class(subclass) using the mapRow method to convert
+               a row of data into an object. Instead of instantiating all
+               instance at once and returning as array, this method returns
+               a DBStream instance which then creates each instance from an
+               open handle on each $stream->next_in_stream() call.
   Arg (1)    : $database (MQdb::Database)
   Arg (2)    : $sql (string of SQL statement with place holders)
   Arg (3...) : optional parameters to map to the placehodlers within the SQL
-  Example    : $obj = $self->fetch_single($db, "select * from my_table where id=?", $id);
-  Description: General purpose template method for fetching an array of instance
-               of this class(subclass) using the mapRow method to convert
-               a row of data into an object.
   Returntype : DBStream object
   Exceptions : none
-  Caller     : subclasses (not public methods)
-
+  Caller     : subclasses use this internally when creating new API stream_by....() methods
+  Example    :
+                  sub stream_by_value {
+                      my $class = shift;
+                      my $db = shift;
+                      my $name = shift;
+                      my $sql = "SELECT * FROM symbol WHERE sym_value=?";
+                      return $class->stream_multiple($db, $sql, $name);
+                  }
+                  
 =cut
 
 sub stream_multiple {
@@ -277,10 +306,12 @@ sub stream_multiple {
 
 =head2 fetch_col_value
 
+  Description: General purpose function to allow fetching of a single column from a single row.
   Arg (1)    : $sql (string of SQL statement with place holders)
   Arg (2...) : optional parameters to map to the placehodlers within the SQL
-  Example    : $value = $self->fetch_col_value($db, "select some_column from my_table where id=?", $id);
-  Description: General purpose function to allow fetching of a single column from a single row.
+  Example    : $value = $self->fetch_col_value($db, 
+                                               "select symbol_id from symbol where sym_type=? and sym_value=?", 
+                                               $type,$value);
   Returntype : scalar value
   Exceptions : none
   Caller     : within subclasses to easy development
@@ -305,10 +336,10 @@ sub fetch_col_value {
 
 =head2 fetch_col_array
 
+  Description: General purpose function to allow fetching of a single column from many rows into a simple array.
   Arg (1)    : $sql (string of SQL statement with place holders)
   Arg (2...) : optional parameters to map to the placehodlers within the SQL
   Example    : $array_ref = $self->fetch_col_array($db, "select some_column from my_table where source_id=?", $id);
-  Description: General purpose function to allow fetching of a single column from many rows.
   Returntype : array reference of scalar values
   Exceptions : none
   Caller     : within subclasses to easy development
@@ -336,46 +367,14 @@ sub fetch_col_array {
 }
 
 
-sub test_exists {
-  my $self = shift;
-  my $sql = shift;
-  my @params = @_;
+=head2 next_sequence_id
 
-  die("no database defined\n") unless($self->database);
-  my $dbc = $self->database->get_connection;
-  my $sth = $dbc->prepare($sql);
-  $sth->execute(@params);
-  my $exists=0;
-  if(my $row_hash = $sth->fetchrow_hashref) { $exists=1; }
-  $sth->finish;
-  return $exists;
-}
+  Description: Convenience method for working with SEQUENCES in ORACLE databases.
+  Arg (1)    : $sequenceName
+  Returntype : scalar of the nextval in the sequence
+  Exceptions : none
 
-#################################################
-# Subclass must override these methods
-#################################################
-sub mapRow {
-  my $self = shift;
-  my $row_hash = shift;
-  my $dbh = shift; #optional 
-  
-  die("mapRow must be implemented by subclasses");
-  #should by implemented by subclass to map columns into instance variables
-
-  return $self;
-}
-
-sub store {
-  my $self = shift;
-  die("store must be implemented by subclass");
-}
-
-
-#################################################
-#
-# internal methods
-#
-#################################################
+=cut
 
 sub next_sequence_id {
   my $self = shift;
