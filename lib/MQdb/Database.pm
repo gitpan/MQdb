@@ -1,3 +1,4 @@
+# $Id: Database.pm,v 1.34 2009/05/30 01:57:14 severin Exp $
 =pod
  
 =head1 NAME - MQdb::Database
@@ -80,7 +81,7 @@ The rest of the documentation details each of the object methods. Internal metho
 
 =cut
 
-$VERSION=0.953;
+$VERSION=0.954;
 
 package MQdb::Database;
 use strict;
@@ -95,11 +96,33 @@ use DBI;
 
 =cut
 
+=head2 new
+
+  Description: instance creation method
+  Returntype : instance of this Class (subclass)
+  Exceptions : none
+
+=cut
+
 sub new {
-  my ($class, %params) = @_;
-  
+  my ($class, @args) = @_;
   my $self = {};
-  bless $self, $class;
+  bless $self,$class;
+  $self->init(@args);
+  return $self;
+}
+
+=head2 init
+
+  Description: initialization method which subclasses can extend
+  Returntype : $self
+  Exceptions : subclass dependent
+
+=cut
+
+sub init {
+  my ($self, %params) = @_;
+  
   $self->{'_uuid'}   = '';  #initially not set
   $self->{'_driver'} = 'mysql';
   $self->{'_host'}     = $params{'-host'};
@@ -181,7 +204,7 @@ sub new_from_url {
     $params = substr($dbname, $p2+1, length($dbname));
     $dbname = substr($dbname, 0, $p2);
   }
-  if(($driver ne 'sqlite') and ($p2=index($dbname, "/")) != -1) {
+  if((($driver eq 'mysql') or ($driver eq 'oracle')) and ($p2=index($dbname, "/")) != -1) {
     $path   = substr($dbname, $p2+1, length($dbname));
     $dbname = substr($dbname, 0, $p2);
   }
@@ -279,7 +302,7 @@ sub copy {
 
 sub dbc {
   my $self = shift;
-  return $self->_get_connection;
+  return $self->get_connection;
 }
 
 sub get_connection {
@@ -408,12 +431,13 @@ sub url {
   #no username or password in URL
   my $self = shift;
   return $self->{'_short_url'} if(defined($self->{'_short_url'}));
-  $self->{'_short_url'} = 
-       sprintf("%s://%s:%s/%s", 
-               $self->driver, 
-               $self->host, 
-               $self->port, 
-               $self->dbname);
+  my $url = $self->driver . "://";
+  if($self->host) {
+    if($self->port) { $url .= $self->host .":". $self->port; }
+    else { $url .= $self->host; }
+  }
+  $url .= "/". $self->dbname;
+  $self->{'_short_url'} = $url;
   return $self->{'_short_url'};
 }
 

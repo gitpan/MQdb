@@ -1,3 +1,4 @@
+# $Id: DBObject.pm,v 1.13 2009/06/03 06:47:32 severin Exp $
 =head1 NAME
 
 MQdb::DBObject - DESCRIPTION of Object
@@ -55,7 +56,7 @@ Internal methods are usually preceded with a _
 
 =cut
 
-$VERSION=0.953;
+$VERSION=0.954;
 
 package MQdb::DBObject;
 
@@ -162,9 +163,6 @@ sub database {
   my $self = shift;
   if(@_) {
     my $db = shift;
-    if(defined($db) and !($db->isa('MQdb::Database'))) {
-      die("$db is not a MQdb::Database");
-    }
     $self->{'_database'} = $db;
   }
   return $self->{'_database'};

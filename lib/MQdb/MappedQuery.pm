@@ -1,3 +1,4 @@
+# $Id: MappedQuery.pm,v 1.23 2009/06/03 06:47:32 severin Exp $
 =head1 NAME
 
 MQdb::MappedQuery - DESCRIPTION of Object
@@ -89,7 +90,7 @@ The rest of the documentation details each of the object methods. Internal metho
 
 =cut
 
-$VERSION=0.953;
+$VERSION=0.954;
 
 package MQdb::MappedQuery;
 

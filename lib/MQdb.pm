@@ -1,3 +1,4 @@
+# $Id: MQdb.pm,v 1.7 2009/05/30 01:54:30 severin Exp $
 =pod
  
 =head1 NAME - MQdb
@@ -49,7 +50,7 @@ The rest of the documentation details each of the object methods. Internal metho
 
 =cut
 
-$VERSION=0.953;
+$VERSION=0.954;
 
 package MQdb;
 use strict;

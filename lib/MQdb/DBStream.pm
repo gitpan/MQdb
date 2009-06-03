@@ -1,3 +1,4 @@
+# $Id: DBStream.pm,v 1.15 2009/06/03 06:47:32 severin Exp $
 =head1 NAME
 
 MQdb::DBStream - DESCRIPTION of Object
@@ -51,7 +52,7 @@ The rest of the documentation details each of the object methods. Internal metho
 
 my $__mqdb_dbstream_should_use_result = undef;
 
-$VERSION=0.953;
+$VERSION=0.954;
 
 package MQdb::DBStream;
 
